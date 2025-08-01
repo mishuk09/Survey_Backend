@@ -7,14 +7,13 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 require("dotenv").config(); // Load environment variables
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-
+// ✅ CORS with specific allowed origins
 const allowedOrigins = [
     "http://localhost:3000",
-    "https://mishukinfo.com",
     "http://localhost:3001",
+    "https://mishukinfo.com",
     "https://powderblue-goldfinch-362369.hostingersite.com/"
 ];
 
@@ -30,53 +29,42 @@ app.use(cors({
     credentials: true
 }));
 
-
-// MongoDB Connection
-mongoose.connect("mongodb+srv://mishukinfo09:7Ns4Jabo6aWgGVtf@mmu-task-add.sgp9njp.mongodb.net/?retryWrites=true&w=majority&appName=mmu-task-add", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+// ✅ MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB connected"))
     .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// Cloudinary Config
+// ✅ Cloudinary Configuration
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Cloudinary Storage Setup with Multer
-// const storage = new CloudinaryStorage({
-//     cloudinary: cloudinary,
-//     params: {
-//         folder: "survey_uploads",
-//         allowed_formats: ["jpg", "png", "jpeg", "pdf"]
-//     }
-// });
-
+// ✅ Cloudinary Storage Setup
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: "survey_uploads",
         allowed_formats: ["jpg", "png", "jpeg", "pdf"],
-        transformation: [{ width: 800, height: 800, crop: "limit" }] // 👈 resize here
+        transformation: [{ width: 800, height: 800, crop: "limit" }]
     }
 });
 
 const upload = multer({ storage });
 
-// Mongoose Schema
+// ✅ Mongoose Schema
 const surveySchema = new mongoose.Schema({
     demographics: Object,
     awareness: Object,
     readiness: Object,
     textAnswers: Object,
-    images: [String] // to store image URLs from Cloudinary
+    images: [String]
 });
+
 const Survey = mongoose.model("Survey", surveySchema);
 
-// Get All Surveys
+// ✅ Get All Surveys
 app.get("/get/surveys", async (req, res) => {
     try {
         const surveys = await Survey.find();
@@ -87,12 +75,10 @@ app.get("/get/surveys", async (req, res) => {
     }
 });
 
-// Submit Survey with Images (Main Endpoint)
+// ✅ Submit Survey with Images
 app.post("/api/survey", upload.array("images", 5), async (req, res) => {
     try {
         const imageUrls = req.files?.map(file => file.path) || [];
-
-        // Parse form data (stringified JSON)
         const { demographics, awareness, readiness, textAnswers } = req.body;
 
         const newSurvey = new Survey({
@@ -111,6 +97,6 @@ app.post("/api/survey", upload.array("images", 5), async (req, res) => {
     }
 });
 
-// Start Server
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
