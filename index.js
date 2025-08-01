@@ -10,6 +10,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://mishukinfo.com",
+    "http://localhost:3001",
+    "https://powderblue-goldfinch-362369.hostingersite.com/"
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    methods: ["GET", "POST"],
+    credentials: true
+}));
+
+
 // MongoDB Connection
 mongoose.connect("mongodb+srv://mishukinfo09:7Ns4Jabo6aWgGVtf@mmu-task-add.sgp9njp.mongodb.net/?retryWrites=true&w=majority&appName=mmu-task-add", {
     useNewUrlParser: true,
